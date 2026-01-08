@@ -1,7 +1,10 @@
+using System;
+using System.Runtime.InteropServices;
 using UnityEngine;
 using FMOD;
 using FMOD.Studio;
 using FMODUnity;
+using Debug = UnityEngine.Debug;
 using STOP_MODE = FMOD.Studio.STOP_MODE;
 
 public class FMODMusicEvents : MonoBehaviour
@@ -9,59 +12,54 @@ public class FMODMusicEvents : MonoBehaviour
     public EventReference musicEvent;
     private EventInstance musicInstance;
 
-    // The object to animate
-    public Transform objectToAnimate;
-
-    // Animation parameters
-    public float beatScaleAmount = 1.5f;
-    public float scaleSpeed = 5f;
-
-    // Internal
-    private bool beatTriggered = false;
-    private Vector3 originalScale;
+    public static int currentBeat;
+    public static bool inBeatWindow = true;
 
     void Start()
     {
-        originalScale = objectToAnimate.localScale;
-
-        // Create FMOD instance
         musicInstance = RuntimeManager.CreateInstance(musicEvent);
 
-        // Listen for beat callbacks
         musicInstance.setCallback(
-            (type, instance, paramPtr) =>
-            {
-                if (type == EVENT_CALLBACK_TYPE.TIMELINE_BEAT)
-                {
-                    Beat();
-                }
-                return RESULT.OK;
-            },
-            EVENT_CALLBACK_TYPE.TIMELINE_BEAT
+            MusicCallback,
+            EVENT_CALLBACK_TYPE.TIMELINE_BEAT | EVENT_CALLBACK_TYPE.TIMELINE_MARKER
         );
 
         musicInstance.start();
-    }
-
-    void Update()
-    {
-        // Animate scale smoothly toward target
-        Vector3 targetScale = beatTriggered ? originalScale * beatScaleAmount : originalScale;
-        objectToAnimate.localScale = Vector3.Lerp(objectToAnimate.localScale, targetScale, Time.deltaTime * scaleSpeed);
-
-        // Reset beat trigger after scaling
-        if (beatTriggered && Vector3.Distance(objectToAnimate.localScale, targetScale) < 0.01f)
-            beatTriggered = false;
-    }
-
-    private void Beat()
-    {
-        beatTriggered = true;
     }
 
     void OnDestroy()
     {
         musicInstance.stop(STOP_MODE.IMMEDIATE);
         musicInstance.release();
+    }
+
+    static RESULT MusicCallback(EVENT_CALLBACK_TYPE type, IntPtr instancePtr, IntPtr parameterPtr)
+    {
+        if (type == EVENT_CALLBACK_TYPE.TIMELINE_BEAT)
+        {
+            var beat = (TIMELINE_BEAT_PROPERTIES)
+                Marshal.PtrToStructure(parameterPtr, typeof(TIMELINE_BEAT_PROPERTIES));
+
+            currentBeat = beat.beat;
+        }
+
+        if (type == EVENT_CALLBACK_TYPE.TIMELINE_MARKER)
+        {
+            var marker = (TIMELINE_MARKER_PROPERTIES)
+                Marshal.PtrToStructure(parameterPtr, typeof(TIMELINE_MARKER_PROPERTIES));
+
+            if (marker.name == "In")
+            {
+                inBeatWindow = true;
+                Debug.Log("In");
+            }
+            else if (marker.name == "Out")
+            {
+                inBeatWindow = false;
+                Debug.Log("Out");
+            }
+        }
+
+        return RESULT.OK;
     }
 }
