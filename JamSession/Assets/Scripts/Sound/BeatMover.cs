@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class BeatMover : MonoBehaviour
+public class BeatMover : MonoBehaviour, IBeatScript
 {
     [SerializeField] private float moveDistance = 1f;
     [SerializeField] private float moveSpeed = 8f;
