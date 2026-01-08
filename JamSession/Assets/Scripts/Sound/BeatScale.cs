@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class BeatScale : MonoBehaviour
+public class BeatScale : MonoBehaviour, IBeatScript
 {
     [SerializeField] private float maxScale = 1.5f;
     [SerializeField] private float scaleSpeed = 8f;

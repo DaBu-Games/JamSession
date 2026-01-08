@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class BeatRotate : MonoBehaviour
+public class BeatRotate : MonoBehaviour, IBeatScript
 {
     [SerializeField] private float maxRotation = 40f;
     [SerializeField] private float rotateSpeed = 8f;
