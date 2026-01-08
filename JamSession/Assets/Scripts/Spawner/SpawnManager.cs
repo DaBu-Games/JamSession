@@ -6,7 +6,7 @@ public class SpawnManager : MonoBehaviour
     [Header("Spawn Settings")]
     [SerializeField] private Transform floor;
     [SerializeField] private float spawnY;
-    [SerializeField] private GameObject prefab; 
+    [SerializeField] private List<GameObject> prefabs; 
     [SerializeField] private Vector2 gridSize = new Vector2(100, 100);
     [SerializeField] private int objectCount = 50;
     
@@ -21,7 +21,8 @@ public class SpawnManager : MonoBehaviour
         
         for (int i = 0; i < objectCount; i++)
         {
-            GameObject obj = Instantiate(prefab, GetPosition(), Quaternion.identity);
+            int prefabIndex = Random.Range(0, prefabs.Count);
+            GameObject obj = Instantiate(prefabs[prefabIndex], GetPosition(), Quaternion.identity);
             
             IBeatScript script = null;
             switch (Random.Range(0, 3))
