@@ -1,4 +1,4 @@
 public interface IBeatScript
 {
-    void SetMoveToBeat();
+    void MoveOutOfBeat();
 }

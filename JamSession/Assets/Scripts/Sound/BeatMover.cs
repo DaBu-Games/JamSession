@@ -11,7 +11,7 @@ public class BeatMover : MonoBehaviour, IBeatScript
     private Vector3 chosenAxis;
     private float timer = 0f;
     
-    public void SetMoveToBeat() => moveToBeat = false;
+    public void MoveOutOfBeat() => moveToBeat = false;
 
     void Start()
     {
