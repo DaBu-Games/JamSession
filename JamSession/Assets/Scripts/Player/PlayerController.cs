@@ -47,6 +47,8 @@ public class PlayerController : MonoBehaviour
     private void DisableController()
     {
         this.gameObject.GetComponent<PlayerInput>().enabled = false;
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 
     public void OnMove(InputAction.CallbackContext context)
