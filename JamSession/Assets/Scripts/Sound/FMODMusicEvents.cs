@@ -14,6 +14,8 @@ public class FMODMusicEvents : MonoBehaviour
 
     public static int currentBeat;
     public static bool inBeatWindow = true;
+    
+    private bool stopped = false;
 
     void Start()
     {
@@ -21,16 +23,51 @@ public class FMODMusicEvents : MonoBehaviour
 
         musicInstance.setCallback(
             MusicCallback,
-            EVENT_CALLBACK_TYPE.TIMELINE_BEAT | EVENT_CALLBACK_TYPE.TIMELINE_MARKER
+            EVENT_CALLBACK_TYPE.TIMELINE_BEAT 
+            | EVENT_CALLBACK_TYPE.TIMELINE_MARKER 
+            | EVENT_CALLBACK_TYPE.STOPPED
         );
 
         musicInstance.start();
     }
 
-    void OnDestroy()
+    private void OnEnable()
     {
-        musicInstance.stop(STOP_MODE.IMMEDIATE);
-        musicInstance.release();
+        GameEvents.GameOver += OnGameOver;
+    }
+
+    private void OnDisable()
+    {
+        GameEvents.GameOver -= OnGameOver;
+    }
+
+    private void OnGameOver()
+    {
+        if (!stopped)
+        {
+            musicInstance.stop(STOP_MODE.IMMEDIATE);
+            musicInstance.release();
+            stopped = true;
+        }
+    }
+
+    private void OnDestroy()
+    {
+        OnGameOver();
+    }
+
+    private void Update()
+    {
+        if (!stopped)
+        {
+            PLAYBACK_STATE state;
+            musicInstance.getPlaybackState(out state);
+            
+            if (state == PLAYBACK_STATE.STOPPED)
+            {
+                GameEvents.GameOver?.Invoke();
+            }
+        }
     }
 
     static RESULT MusicCallback(EVENT_CALLBACK_TYPE type, IntPtr instancePtr, IntPtr parameterPtr)
@@ -51,12 +88,10 @@ public class FMODMusicEvents : MonoBehaviour
             if (marker.name == "In")
             {
                 inBeatWindow = true;
-                Debug.Log("In");
             }
             else if (marker.name == "Out")
             {
                 inBeatWindow = false;
-                Debug.Log("Out");
             }
         }
 

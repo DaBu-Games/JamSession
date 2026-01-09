@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class SpawnManager : MonoBehaviour
 {
@@ -41,6 +43,16 @@ public class SpawnManager : MonoBehaviour
         }
     }
 
+    private void OnEnable()
+    {
+        GameEvents.BuzzKillDestroyed += SetNewBuzzKill;
+    }
+
+    private void OnDisable()
+    {
+        GameEvents.BuzzKillDestroyed -= SetNewBuzzKill;
+    }
+
     private Vector3 GetPosition()
     {
         while(true)
@@ -62,5 +74,22 @@ public class SpawnManager : MonoBehaviour
                 return pos;
             }
         }
+    }
+
+    public void SetNewBuzzKill()
+    {
+        if (animalParents.childCount == 0)
+        {
+            GameEvents.GameOver?.Invoke();
+            return;
+        }
+        
+        int index = Random.Range(0, animalParents.childCount);
+        
+        GameObject obj = animalParents.GetChild(index).gameObject;
+        if (obj.TryGetComponent<IBeatScript>(out var script))
+            script.MoveOutOfBeat();
+
+        obj.layer = LayerMask.NameToLayer("BuzzKill");
     }
 }

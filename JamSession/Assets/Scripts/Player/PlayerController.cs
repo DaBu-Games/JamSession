@@ -29,9 +29,24 @@ public class PlayerController : MonoBehaviour
         Cursor.visible = false;
     }
 
+    private void OnEnable()
+    {
+        GameEvents.GameOver += DisableController;
+    }
+
+    private void OnDisable()
+    {
+        GameEvents.GameOver -= DisableController;
+    }
+
     public void Update()
     {
         HandleMovement();
+    }
+
+    private void DisableController()
+    {
+        this.gameObject.GetComponent<PlayerInput>().enabled = false;
     }
 
     public void OnMove(InputAction.CallbackContext context)
