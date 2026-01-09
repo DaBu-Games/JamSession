@@ -10,7 +10,7 @@ public class BeatScale : MonoBehaviour, IBeatScript
     private Vector3 targetScale;
     private float timer = 0f;
     
-    public void SetMoveToBeat() => moveToBeat = false;
+    public void MoveOutOfBeat() => moveToBeat = false;
 
     void Start()
     {

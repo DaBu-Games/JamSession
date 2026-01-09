@@ -1,23 +1,25 @@
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 public class GunShoot : MonoBehaviour
 {
     [Header("Values")]
     [SerializeField] private float range;
-    [SerializeField] private int bullets = 3;
+    [SerializeField] private int maxAmmo = 3;
     [SerializeField] private float coolDown = 2f;
     [SerializeField] private LayerMask hitLayers = ~0;
     
     [Header("References")]
-    [SerializeField] private GameObject bulletPrefab;
     [SerializeField] private LineRenderer line;
     [SerializeField] private Material notTargetMaterial;
     [SerializeField] private Material hasTargetMaterial;
     
-    private float coolDownTimer = 0f;
-    private Transform target;
+    private float _coolDownTimer = 0f;
+    private Transform _target;
+    private UIManager _UIManager;
+    private int _ammo;
 
     void Start()
     {
@@ -26,6 +28,10 @@ public class GunShoot : MonoBehaviour
         line.endWidth = 0.02f;
         line.useWorldSpace = true;
         line.material = notTargetMaterial;
+        
+        _UIManager = UIManager.Instance;
+        _UIManager.BulletsUI.SetAmmo(maxAmmo);
+        _ammo = maxAmmo;
     }
 
     // Update is called once per frame
@@ -39,12 +45,12 @@ public class GunShoot : MonoBehaviour
         {
             end = hit.point;
             line.material = hasTargetMaterial;
-            target = hit.transform;
+            _target = hit.transform;
         }
         else
         {
             line.material = notTargetMaterial;
-            target = null;
+            _target = null;
         }
 
         line.SetPosition(0, start);
@@ -53,11 +59,23 @@ public class GunShoot : MonoBehaviour
 
     public void Shoot(InputAction.CallbackContext context)
     {
-        if (target != null && context.performed && (Time.time - coolDownTimer) >= coolDown && bullets > 0)
+        if (_target != null && context.performed && (Time.time - _coolDownTimer) >= coolDown && maxAmmo > 0)
         {
-            Destroy(target.gameObject);
-            bullets--;
-            coolDownTimer = Time.time;
+            GameObject obj = _target.gameObject;
+            if (obj.layer == LayerMask.NameToLayer("BuzzKill"))
+            {
+                _UIManager.CorrectTransition.Play();
+                _ammo = maxAmmo;
+            }
+            else
+            {
+                _UIManager.WrongTransition.Play();
+                _ammo--;
+            }
+            
+            Destroy(obj);
+            _UIManager.BulletsUI.SetAmmo(_ammo);
+            _coolDownTimer = Time.time;
         }
     }
 }

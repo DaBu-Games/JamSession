@@ -5,6 +5,7 @@ public class SpawnManager : MonoBehaviour
 {
     [Header("Spawn Settings")]
     [SerializeField] private Transform floor;
+    [SerializeField] private Transform animalParents;
     [SerializeField] private float spawnY;
     [SerializeField] private List<GameObject> prefabs; 
     [SerializeField] private Vector2 gridSize = new Vector2(100, 100);
@@ -22,7 +23,7 @@ public class SpawnManager : MonoBehaviour
         for (int i = 0; i < objectCount; i++)
         {
             int prefabIndex = Random.Range(0, prefabs.Count);
-            GameObject obj = Instantiate(prefabs[prefabIndex], GetPosition(), Quaternion.identity);
+            GameObject obj = Instantiate(prefabs[prefabIndex], GetPosition(), Quaternion.identity, animalParents);
             
             IBeatScript script = null;
             switch (Random.Range(0, 3))
@@ -31,9 +32,12 @@ public class SpawnManager : MonoBehaviour
                 case 1: script = obj.AddComponent<BeatRotate>(); break;
                 case 2: script = obj.AddComponent<BeatScale>(); break;
             }
-            
+
             if (i == outOfBeatIndex)
-                script?.SetMoveToBeat();
+            {
+                script?.MoveOutOfBeat();
+                obj.layer = LayerMask.NameToLayer("BuzzKill");
+            }
         }
     }
 
