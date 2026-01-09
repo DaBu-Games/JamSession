@@ -62,18 +62,26 @@ public class GunShoot : MonoBehaviour
         if (_target != null && context.performed && (Time.time - _coolDownTimer) >= coolDown && maxAmmo > 0)
         {
             GameObject obj = _target.gameObject;
+            Destroy(obj);
+            
             if (obj.layer == LayerMask.NameToLayer("BuzzKill"))
             {
                 _UIManager.CorrectTransition.Play();
                 _ammo = maxAmmo;
+                GameEvents.BuzzKillDestroyed?.Invoke();
             }
             else
             {
                 _UIManager.WrongTransition.Play();
                 _ammo--;
+
+                if (_ammo == 0)
+                {
+                    GameEvents.GameOver?.Invoke();
+                    return;
+                }
             }
             
-            Destroy(obj);
             _UIManager.BulletsUI.SetAmmo(_ammo);
             _coolDownTimer = Time.time;
         }
